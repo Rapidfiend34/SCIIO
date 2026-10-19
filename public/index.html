@@ -7,7 +7,7 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
   <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
-  <title>Ardor Retro Computer — Explore Ardor on a Phosphor CRT</title>
+  <title>SCIIO — Retro Computer / Ardor + Hermes</title>
   <meta name="description" content="Explore Ardor on a 1980s phosphor terminal: animated ASCII worlds, eight CRT colors and a live command line — an interactive retro page built in Ardor.">
   <meta property="og:title" content="Ardor Retro Computer — Explore Ardor on a Phosphor CRT">
   <meta property="og:description" content="Explore Ardor on a 1980s phosphor terminal: animated ASCII worlds, eight CRT colors and a live command line — an interactive retro page built in Ardor.">
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="/assets/terminal.css">
 </head>
 <body>
-  <main id="screen-holder" aria-label="Ardor interactive product explorer">
-    <canvas id="screen" tabindex="0" aria-label="Ardor character terminal. Arrow keys select controls; Enter opens them. Keys 1, 2 and 3 explore cloud work, private team collaboration and real serverless apps. C chooses a color. U opens the current story. K opens a secret ASCII signal. Shift with arrow keys rotates the 3D image. Press question mark for all shortcuts. Enter or Escape skips the introduction."></canvas>
+  <main id="screen-holder" aria-label="SCIIO interactive product explorer: Ardor and Hermes">
+    <canvas id="screen" tabindex="0" aria-label="SCIIO character terminal. Arrow keys select controls; Enter opens them. Keys 1, 2 and 3 explore Ardor. Key 6 or H opens Hermes Agent. In Hermes, 1 through 5 open its sections and 6 returns to SCIIO. C chooses a color. U opens the current story. K opens a secret ASCII signal. Shift with arrow keys rotates the Ardor 3D image. Press question mark for all shortcuts. Enter or Escape skips the introduction."></canvas>
     <div id="accessible-copy" class="accessible" role="document" aria-label="Current product content"></div>
     <div id="accessible-controls" class="accessible" aria-label="Terminal controls"></div>
     <div id="accessible-status" class="accessible" role="status" aria-live="polite"></div>
@@ -38,6 +38,7 @@
     <div id="fallback" hidden><p>THE VISUAL LINK IS UNAVAILABLE.</p><p>Enable WebGL, then reconnect to Ardor.</p><button id="reconnect">RECONNECT ↵</button><a href="https://ardor.cloud/" target="_blank" rel="noopener noreferrer">EXPLORE ARDOR ↗</a></div>
   </main>
   <noscript>This Ardor terminal needs JavaScript. Visit ardor.cloud to explore the product.</noscript>
+  <script src="/assets/hermes-content.js" defer></script>
   <script src="/assets/terminal.js" defer></script>
 </body>
 </html>
