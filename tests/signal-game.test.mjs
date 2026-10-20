@@ -7,9 +7,10 @@ const context = {};
 runInNewContext(readFileSync(new URL('../public/assets/signal-game.js', import.meta.url), 'utf8'), context);
 const game = context.UltimaSignal;
 const play = (state, commands) => commands.reduce((s, command) => game.apply(s, command).state, state);
-const solution = ['INICIAR', 'LEER BALIZA', 'CLAVE 0317', 'LEER GUARDIA', 'LEER PROTOCOLO', 'LEER TRIPULACION', 'FRECUENCIA 731', 'VERIFICAR', 'HABLAR IDENTIDAD', 'HABLAR ACCIDENTE', 'HABLAR PETICION', 'RESTABLECER'];
+const access = ['REGISTRAR PRUEBA', 'SINCRO', 'REPETIR', 'PULSO 2', 'PULSO 4', 'PULSO 1', 'REPETIR', 'PULSO 3', 'PULSO 1', 'PULSO 4', 'PULSO 2'];
+const solution = [...access, 'INICIAR', 'LEER BALIZA', 'CLAVE 0317', 'LEER GUARDIA', 'LEER PROTOCOLO', 'LEER TRIPULACION', 'FRECUENCIA 731', 'VERIFICAR', 'HABLAR IDENTIDAD', 'HABLAR ACCIDENTE', 'HABLAR PETICION', 'CONFIAR DUDAR', 'DERIVAR CLINICA', 'CONFIRMAR', 'RECUERDO', 'FRAGMENTO 3', 'FRAGMENTO 1', 'FRAGMENTO 2', 'RESTABLECER'];
 
-for (const ending of ['rescate', 'memoria', 'silencio']) {
+for (const ending of ['rescate', 'memoria', 'silencio', 'despertar']) {
   test(`a player can reach ${ending} with an explicit final confirmation`, () => {
     const ready = play(game.initial(), solution);
     assert.equal(ready.power, true);
@@ -29,7 +30,7 @@ for (const ending of ['rescate', 'memoria', 'silencio']) {
 test('puzzles block early actions, give useful feedback and accept typed Spanish commands', () => {
   let state = game.initial();
   assert.equal(game.apply(state, 'ELEGIR RESCATE').state.pending, null);
-  state = game.apply(state, 'INICIAR').state;
+  state = play(state, [...access, 'INICIAR']);
   assert.equal(game.apply(state, 'LEER PROTOCOLO').state.read.length, 0);
   assert.equal(game.apply(state, 'CLAVE 9999').state.archive, false);
   assert.equal(game.apply(state, 'FRECUENCIA NaN').state.frequency, 462);
@@ -54,7 +55,7 @@ test('reload keeps progress, discards pending decisions, and tolerates broken sa
   assert.equal(restored.power, true);
   assert.equal(restored.pending, null);
   assert.equal(game.apply(restored, 'CONFIRMAR').state.ending, null);
-  for (const raw of ['{broken', '{}', 'null', JSON.stringify({ ...state, scene: '__proto__' }), JSON.stringify({ ...state, read: ['invalid'] }), JSON.stringify({ ...state, frequency: '731' })]) {
+  for (const raw of ['{broken', '{}', 'null', JSON.stringify({ ...state, scene: '__proto__' }), JSON.stringify({ ...state, read: ['invalid'] }), JSON.stringify({ ...state, frequency: '731' }), JSON.stringify({ ...state, synced: false, syncRound: 2 }), JSON.stringify({ ...state, synced: true, syncRound: 0 })]) {
     assert.equal(game.restore(raw).started, false);
   }
 });
@@ -67,4 +68,90 @@ test('restarting requires confirmation and preserves discovered endings', () => 
   assert.equal(fresh.started, false);
   assert.equal(fresh.ending, null);
   assert.equal(fresh.found[0], 'memoria');
+});
+
+test('registration is local fiction and rejects real-looking credentials and invalid aliases', () => {
+  for (const alias of ['a@b.com', 'X', '<script>', 'DOS PALABRAS', '12345678901234567']) {
+    assert.equal(game.apply(game.initial(), 'REGISTRAR ' + alias).state.alias, '');
+  }
+  const registered = game.apply(game.initial(), 'REGISTRAR viajero_17').state;
+  assert.equal(registered.alias, 'VIAJERO_17');
+  assert.equal(registered.started, false);
+  assert.equal(game.apply(registered, 'INICIAR').state.started, false);
+  assert.equal(game.apply(registered, 'ACCEDER OTRO').state.alias, registered.alias);
+  assert.equal(game.apply(registered, 'REGISTRAR OTRO').state.alias, registered.alias);
+});
+
+test('synchronization requires observation and both rounds, and survives reload between rounds', () => {
+  let s = play(game.initial(), ['REGISTRAR VIAJERO', 'SINCRO']);
+  assert.equal(game.apply(s, 'PULSO 2').state.syncInput.length, 0);
+  s = play(s, ['REPETIR', 'PULSO 1']);
+  assert.equal(s.syncPhase, 'observe');
+  assert.equal(s.syncRound, 0);
+  s = play(s, ['REPETIR', 'PULSO 2', 'PULSO 4', 'PULSO 1']);
+  assert.equal(s.syncRound, 1);
+  assert.equal(s.synced, false);
+  s = game.restore(JSON.stringify(s));
+  assert.equal(s.syncRound, 1);
+  assert.equal(s.syncInput.length, 0);
+  s = play(s, ['REPETIR', 'PULSO 3', 'PULSO 1', 'PULSO 4', 'PULSO 2']);
+  assert.equal(s.synced, true);
+  assert.equal(game.apply(s, 'INICIAR').state.started, true);
+});
+
+const beforeRoute = [...access, 'INICIAR', 'LEER BALIZA', 'CLAVE 0317', 'FRECUENCIA 731', 'VERIFICAR'];
+
+test('trust changes dialogue and exclusive route allocation requires confirmation', () => {
+  const base = play(game.initial(), beforeRoute);
+  const trust = game.apply(base, 'CONFIAR ECO').state;
+  const doubt = game.apply(base, 'CONFIAR DUDAR').state;
+  assert.notEqual(game.apply(trust, 'HABLAR IDENTIDAD').panel.body, game.apply(doubt, 'HABLAR IDENTIDAD').panel.body);
+  assert.equal(game.apply(doubt, 'CONFIAR ECO').state.trust, 'dudar');
+  const proposed = game.apply(doubt, 'DERIVAR CLINICA').state;
+  assert.equal(proposed.route, null);
+  assert.equal(game.apply(game.apply(proposed, 'CANCELAR').state, 'CONFIRMAR').state.route, null);
+  const committed = game.apply(proposed, 'CONFIRMAR').state;
+  assert.equal(committed.route, 'clinica');
+  assert.equal(game.apply(committed, 'DERIVAR OBSERVATORIO').state.route, 'clinica');
+  assert.equal(game.apply(committed, 'CIRCUITO').puzzle, null);
+});
+
+test('the memory reconstruction unlocks a record and the fourth ending only on the doubt route', () => {
+  let s = play(game.initial(), [...beforeRoute, 'CONFIAR DUDAR', 'DERIVAR CLINICA', 'CONFIRMAR']);
+  assert.equal(game.apply(s, 'LEER CONSENTIMIENTO').state.read.includes('consentimiento'), false);
+  s = play(s, ['RECUERDO', 'FRAGMENTO 1']);
+  assert.equal(s.memoryInput.length, 0);
+  s = play(s, ['FRAGMENTO 3', 'FRAGMENTO 1', 'FRAGMENTO 2']);
+  assert.equal(s.memory, true);
+  assert.equal(s.read.includes('consentimiento'), true);
+  s = play(s, ['HABLAR IDENTIDAD', 'HABLAR ACCIDENTE', 'HABLAR PETICION', 'RESTABLECER', 'ELEGIR DESPERTAR', 'CONFIRMAR']);
+  assert.equal(s.ending, 'despertar');
+  const trusted = { ...s, ending: null, trust: 'eco', pending: null };
+  assert.equal(game.apply(trusted, 'ELEGIR DESPERTAR').state.pending, null);
+});
+
+test('the circuit checks real connections and completes the alternative observatory route', () => {
+  let s = play(game.initial(), [...beforeRoute, 'CONFIAR ECO', 'DERIVAR OBSERVATORIO', 'CONFIRMAR', 'CIRCUITO', 'COMPROBAR']);
+  assert.equal(s.bridge, false);
+  assert.equal(game.apply(s, 'RECUERDO').puzzle, null);
+  s = play(s, ['GIRAR 1', 'GIRAR 2', 'GIRAR 3', 'GIRAR 3', 'GIRAR 4', 'GIRAR 4', 'GIRAR 4', 'COMPROBAR']);
+  assert.equal(s.bridge, true);
+  assert.equal(game.traceCircuit(s.circuit).connected, true);
+  assert.equal(s.read.includes('diagnostico'), true);
+  s = play(s, ['HABLAR IDENTIDAD', 'HABLAR ACCIDENTE', 'HABLAR PETICION', 'RESTABLECER']);
+  assert.equal(s.power, true);
+  assert.equal(game.apply(s, 'ELEGIR DESPERTAR').state.pending, null);
+  assert.equal(play(s, ['ELEGIR SILENCIO', 'CONFIRMAR']).ending, 'silencio');
+});
+
+test('old saves keep discoveries but require the new fictional access and route', () => {
+  const legacy = { version: 1, started: true, scene: 'eco', read: ['baliza', 'guardia'], archive: true, frequency: 731, tuned: true, questions: ['identidad'], power: true, ending: null, found: ['rescate'], pending: 'memoria' };
+  const migrated = game.restore(JSON.stringify(legacy));
+  assert.equal(migrated.version, 2);
+  assert.equal(migrated.alias, '');
+  assert.equal(migrated.archive, true);
+  assert.equal(migrated.found[0], 'rescate');
+  assert.equal(migrated.power, false);
+  assert.equal(migrated.pending, null);
+  assert.equal(game.apply(migrated, 'CONFIAR ECO').state.trust, null);
 });

@@ -1,8 +1,8 @@
 # ULTIMA SENAL / SCIIO
 
-Una estacion desaparecida. Tu nombre en el ruido.
+No recuerdas quien eres. El terminal si.
 
-Prototipo jugable de misterio y ciencia ficcion en un terminal CRT: explora Nadir, recupera sus registros, sintoniza una voz y decide que hacer con la ultima reserva de energia. Incluye dos enigmas, conversaciones con ECO y tres finales. Historia en espanol, escenas ASCII 3D, controles con raton/teclado y teclado numerico para pantallas tactiles.
+Prototipo jugable de misterio y ciencia ficcion en un terminal CRT: recupera el acceso con un alias, explora Nadir y decide si confiar en ECO. La energia solo alcanza para una ruta: clinica de recuerdos u observatorio. Incluye sincronizacion de pulsos, reconstruccion de recuerdos y un circuito de conexiones, ademas del archivo y la frecuencia. Cuatro finales dependen de tus decisiones y descubrimientos. Historia en espanol, escenas ASCII 3D, controles con raton/teclado y teclado numerico para pantallas tactiles.
 
 ## Jugar en local
 
@@ -12,16 +12,18 @@ Requiere Node.js 22 o posterior. No necesita instalar dependencias.
 npm run dev
 ```
 
-Abre http://localhost:3000 y pulsa CONECTAR. La partida se guarda en este navegador. CUADERNO muestra el objetivo y las pistas; PISTA ofrece ayuda sin penalizacion. No hay limite de tiempo.
+Abre http://localhost:3000 y pulsa REGISTRARSE. Usa un alias ficticio de 2 a 16 letras, numeros, guion o guion bajo; completa las dos secuencias de acceso y abre la sesion. La partida se guarda en este navegador. CUADERNO muestra el objetivo y las pistas; PISTA ofrece ayuda sin penalizacion. No hay limite de tiempo.
 
 - Flechas y Enter: elegir controles. Escape: cerrar ventanas o cancelar una decision.
-- 1 a 5: sectores. 6 o J: cuaderno. P: pista. ?: ayuda.
+- 1 a 7: sectores. 8 o J: cuaderno. P: pista. ?: ayuda.
 - Escribe ordenes desde el campo inferior: AYUDA explica las disponibles.
 - Arrastrar o Shift + flechas: girar la escena. Rueda o + / -: zoom.
 - M: sonido ambiente, desactivado al inicio. C: colores.
 - REINICIAR pide confirmacion y conserva los finales descubiertos.
 
-El guardado depende de localStorage: si el navegador lo bloquea, la pantalla avisa y la partida continua solo durante esa sesion. No hay cuentas ni sincronizacion.
+El registro es parte de la ficcion: no pide correo ni contrasena, no crea una cuenta real y solo recuerda un perfil por navegador. Los minijuegos se pueden repetir sin penalizacion y tienen botones para pantallas tactiles. Las rutas de energia requieren confirmacion y se mantienen hasta reiniciar.
+
+El guardado depende de localStorage: si el navegador lo bloquea, la pantalla avisa y la partida continua solo durante esa sesion. No hay sincronizacion entre dispositivos. Los guardados anteriores conservan registros y finales, y pasan por el nuevo acceso.
 
 ## Verificar y compilar
 
@@ -30,7 +32,7 @@ npm test
 npm run build
 ```
 
-`dist/` contiene el sitio estatico. Las pruebas cubren las tres rutas completas, los bloqueos y pistas de los enigmas, confirmacion y cancelacion, guardados corruptos, reinicio, controles moviles y regresiones de las escenas 3D.
+`dist/` contiene el sitio estatico. Las pruebas cubren los cuatro finales, ambos escenarios, registro y sincronizacion, migracion de partidas, los bloqueos y pistas de los enigmas, confirmacion y cancelacion, guardados corruptos, reinicio, controles moviles y regresiones de las escenas 3D.
 
 ## Experimentos anteriores
 
