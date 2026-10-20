@@ -21,6 +21,10 @@ npm run build
 
 `dist/` contiene el sitio estático listo para alojar. Para usar también la ruta `/retro-computer` en un alojamiento estático, configura su fallback hacia `index.html`.
 
+## Vercel
+
+Importa `Rapidfiend34/SCIIO` desde GitHub o ejecuta `vercel --prod` desde la raíz del proyecto con tu sesión iniciada. `vercel.json` configura el build estático, la salida `dist/` y la ruta `/retro-computer`. La sección Hermes está disponible en `/#hermes`. No requiere variables de entorno ni un servidor Node.js en producción.
+
 ## Procedencia y cambios
 
 Se ha reutilizado el código que entrega públicamente la referencia, en lugar de aproximar el efecto visual. Los archivos originales se separaron en HTML, CSS y JavaScript; se retiraron los scripts de analítica de Datafast y Google. Los enlaces de producto apuntan al sitio original. Los recursos visuales se sirven localmente.
