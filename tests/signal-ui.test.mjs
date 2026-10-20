@@ -24,6 +24,29 @@ test('game controls fit desktop and mobile, numeric input fits, and UI actions s
   for (const mobile of [false, true]) {
     controls.length = 0;
     context.M.mobile = mobile;
+    const text = [];
+    const grid = { cols: mobile ? 40 : 84, text: (x, y, value) => text.push(value), put() {} };
+    context.renderSignalHeader(grid);
+    context.renderSignalMain(grid);
+    context.renderSignalFooter(grid);
+    assert.ok(text.includes('login: '));
+    assert.ok(text.includes('INICIO DE SESION REQUERIDO'));
+    assert.equal(controls.some(control => control.id.startsWith('signal-map')), false);
+    assert.deepEqual(controls.map(control => control.id), ['send']);
+    assert.match(context.signalAccessible(), /alias ficticio/);
+  }
+  context.signalCommand('PRUEBA');
+  context.signalCommand('LOGIN PRUEBA');
+  assert.equal(JSON.parse(saved.at(-1)).alias, 'PRUEBA');
+  assert.equal(panels.length, 0, 'alias recovery stays inline in the terminal');
+  assert.match(context.signalAccessible(), /Escribe SINCRO/);
+  for (const command of ['SINCRO', 'REPETIR', 'PULSO 2', 'PULSO 4', 'PULSO 1', 'REPETIR', 'PULSO 3', 'PULSO 1', 'PULSO 4', 'PULSO 2']) context.signalCommand(command);
+  assert.match(context.signalAccessible(), /Escribe INICIAR/);
+  context.signalCommand('LOGIN PRUEBA');
+  assert.equal(JSON.parse(saved.at(-1)).started, true);
+  for (const mobile of [false, true]) {
+    controls.length = 0;
+    context.M.mobile = mobile;
     const grid = { cols: mobile ? 40 : 84, text() {}, put() {}, rule() {}, box() {} };
     context.renderSignalMain(grid);
     context.renderSignalFooter(grid);
@@ -42,7 +65,6 @@ test('game controls fit desktop and mobile, numeric input fits, and UI actions s
       assert.ok(control.y >= 0 && control.y < (mobile ? 61 : 46), control.id);
     }
   }
-  for (const command of ['REGISTRAR PRUEBA', 'SINCRO', 'REPETIR', 'PULSO 2', 'PULSO 4', 'PULSO 1', 'REPETIR', 'PULSO 3', 'PULSO 1', 'PULSO 4', 'PULSO 2', 'INICIAR']) context.signalCommand(command);
   context.signalCommand('LEER BALIZA');
   context.signalCommand('IR ECO');
   assert.equal(JSON.parse(saved.at(-1)).scene, 'eco');

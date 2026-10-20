@@ -12,7 +12,7 @@ Requiere Node.js 22 o posterior. No necesita instalar dependencias.
 npm run dev
 ```
 
-Abre http://localhost:3000 y pulsa REGISTRARSE. Usa un alias ficticio de 2 a 16 letras, numeros, guion o guion bajo; completa las dos secuencias de acceso y abre la sesion. La partida se guarda en este navegador. CUADERNO muestra el objetivo y las pistas; PISTA ofrece ayuda sin penalizacion. No hay limite de tiempo.
+Abre http://localhost:3000 y escribe tu alias en la linea `login:`. Pulsa Enter para continuar. Tambien admite `LOGIN alias` o `REGISTRAR alias`. Usa un alias ficticio de 2 a 16 letras, numeros, guion o guion bajo; completa las dos secuencias de acceso y abre la sesion. La partida se guarda en este navegador. CUADERNO muestra el objetivo y las pistas; PISTA ofrece ayuda sin penalizacion. No hay limite de tiempo.
 
 - Flechas y Enter: elegir controles. Escape: cerrar ventanas o cancelar una decision.
 - 1 a 7: sectores. 8 o J: cuaderno. P: pista. ?: ayuda.
