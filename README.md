@@ -38,6 +38,8 @@ El comando `HERMES` también abre la sección; `SCIIO` vuelve a la escena anteri
 
 Dentro de Hermes, `1` a `5` abren resumen, capacidades, instalación, preguntas frecuentes y Nous Portal; `6` vuelve a SCIIO. Los textos largos usan la paginación del terminal. Colores, configuración de pantalla y controles accesibles siguen usando el motor CRT original.
 
-Contenido adaptado de https://hermes-agent.nousresearch.com/ el 19 de octubre de 2026. Los precios son una instantánea fechada; el enlace CURRENT PLANS lleva a las condiciones actuales. La sección incluye enlaces oficiales a documentación, GitHub, comunidad, descargas y despliegue en la nube. COPY INSTALL copia el comando oficial: no ejecuta ni instala software. La ilustración ASCII de Hermes se dibuja en la misma matriz del terminal.
+Contenido adaptado de https://hermes-agent.nousresearch.com/ el 19 de octubre de 2026. Los precios son una instantánea fechada; el enlace CURRENT PLANS lleva a las condiciones actuales. La sección incluye enlaces oficiales a documentación, GitHub, comunidad, descargas y despliegue en la nube. COPY INSTALL copia el comando oficial: no ejecuta ni instala software.
+
+El rostro con casco alado es una escena 3D de Three.js que usa el rasterizador ASCII original: gira, flota y mueve las alas, con señales que recorren sus órbitas. Arrastra sobre el rostro o usa `Shift` + flechas para rotarlo, la rueda o `+` / `-` para acercarlo y `R` para restaurar la vista. El símbolo `H` de la cabecera también rota y cambia sus caracteres. La preferencia del sistema de movimiento reducido detiene las animaciones automáticas.
 
 La inspección se hizo con el navegador y el HTML público; REA MCP no está registrado en esta sesión. No se modificó su configuración. Esta integración es un apartado informativo y no conecta un agente ni una cuenta de Nous.

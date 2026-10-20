@@ -7,6 +7,7 @@ test('Hermes navigation, layouts, contextual links and install clipboard', async
   const controls = [];
   const actions = [];
   const context = {
+    Jr: function () {},
     Ss: {}, Ae: {}, M: { mobile: false, now: 1000, hermesReturnMode: 'apps' },
     oe: (dialog, page) => actions.push(page.id), dn: mode => actions.push(mode),
     bn: text => text, bs: () => 'orange', Ki() {},
@@ -55,4 +56,51 @@ test('Hermes navigation, layouts, contextual links and install clipboard', async
   context.navigator.clipboard.writeText = async () => { throw new Error('Denied'); };
   await copy.callback();
   assert.match(messages.at(-1), /Clipboard unavailable/);
+  assert.notDeepEqual(context.hermesMarkFrame(0, false), context.hermesMarkFrame(1700, false));
+  assert.deepEqual(context.hermesMarkFrame(0, true), context.hermesMarkFrame(1700, true));
+  assert.ok(context.hermesMarkFrame(500, false).every(row => row.length === 10));
+});
+
+test('Hermes uses the original 3D scene transitions, rotation and reduced-motion clock', () => {
+  const context = { Ss: {}, Ae: {}, matchMedia: () => ({ matches: false }), performance: { now: () => 0 } };
+  runInNewContext(readFileSync(new URL('../public/assets/hermes-content.js', import.meta.url), 'utf8'), context);
+  const bundle = readFileSync(new URL('../public/assets/terminal.js', import.meta.url), 'utf8');
+  const extension = bundle.slice(bundle.indexOf('// Hermes uses the same character matrix'), bundle.lastIndexOf('$M();})();'));
+  const library = bundle.slice(0, bundle.indexOf('var ee=12'));
+  runInNewContext(library + extension + `
+    const world = new Jr(
+      { addEventListener() {} },
+      { getBoundingClientRect: () => ({ width: 600, height: 400 }) },
+      { renderer: { setRenderTarget() {}, render() {} } }
+    );
+    const group = world.groups.hermes;
+    let meshes = 0;
+    group.traverse(node => {
+      if (!node.isMesh) return;
+      meshes++;
+      const position = node.geometry.attributes.position.array;
+      if (!position.every(Number.isFinite)) throw new Error('Non-finite geometry');
+    });
+    world.setMode('hermes');
+    world.draw(1000);
+    const first = world.hermesHead.position.y;
+    world.draw(2000);
+    const moved = world.hermesHead.position.y;
+    const rotation = group.rotation.y;
+    world.reduced = true;
+    world.draw(3000);
+    const reduced = world.hermesHead.position.y;
+    const stillRotation = group.rotation.y;
+    const mode = world.mode;
+    const visible = group.visible;
+    world.setMode('cloud');
+    globalThis.result = { meshes, first, moved, reduced, rotation, stillRotation, mode, visible, returned: world.mode };
+  })();`, context);
+  assert.ok(context.result.meshes >= 20);
+  assert.notEqual(context.result.first, context.result.moved);
+  assert.equal(context.result.moved, context.result.reduced);
+  assert.equal(context.result.rotation, context.result.stillRotation);
+  assert.equal(context.result.mode, 'hermes');
+  assert.equal(context.result.visible, true);
+  assert.equal(context.result.returned, 'cloud');
 });
