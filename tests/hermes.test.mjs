@@ -8,7 +8,7 @@ test('Hermes navigation, layouts, contextual links and install clipboard', async
   const actions = [];
   const context = {
     Jr: function () {},
-    Ss: {}, Ae: {}, M: { mobile: false, now: 1000, hermesReturnMode: 'apps' },
+    Ss: {}, Ae: {}, location: { pathname: "/retro-computer", hash: "" }, localStorage: { getItem: () => null }, M: { mobile: false, now: 1000, hermesReturnMode: 'apps' },
     oe: (dialog, page) => actions.push(page.id), dn: mode => actions.push(mode),
     bn: text => text, bs: () => 'orange', Ki() {},
     Xt: (grid, id, x, y, w, label, callback) => controls.push({ id, x, y, w, label, callback }),
@@ -16,6 +16,7 @@ test('Hermes navigation, layouts, contextual links and install clipboard', async
     As: (grid, id, x, y, w) => controls.push({ id, x, y, w }),
   };
   runInNewContext(readFileSync(new URL('../public/assets/hermes-content.js', import.meta.url), 'utf8'), context);
+  runInNewContext(readFileSync(new URL('../public/assets/signal-game.js', import.meta.url), 'utf8'), context);
   const bundle = readFileSync(new URL('../public/assets/terminal.js', import.meta.url), 'utf8');
   const start = bundle.indexOf('// Hermes uses the same character matrix');
   assert.ok(start > 0);
@@ -62,8 +63,9 @@ test('Hermes navigation, layouts, contextual links and install clipboard', async
 });
 
 test('Hermes uses the original 3D scene transitions, rotation and reduced-motion clock', () => {
-  const context = { Ss: {}, Ae: {}, matchMedia: () => ({ matches: false }), performance: { now: () => 0 } };
+  const context = { Ss: {}, Ae: {}, location: { pathname: "/retro-computer", hash: "" }, localStorage: { getItem: () => null }, matchMedia: () => ({ matches: false }), performance: { now: () => 0 } };
   runInNewContext(readFileSync(new URL('../public/assets/hermes-content.js', import.meta.url), 'utf8'), context);
+  runInNewContext(readFileSync(new URL('../public/assets/signal-game.js', import.meta.url), 'utf8'), context);
   const bundle = readFileSync(new URL('../public/assets/terminal.js', import.meta.url), 'utf8');
   const extension = bundle.slice(bundle.indexOf('// Hermes uses the same character matrix'), bundle.lastIndexOf('$M();})();'));
   const library = bundle.slice(0, bundle.indexOf('var ee=12'));

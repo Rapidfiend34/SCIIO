@@ -1,9 +1,10 @@
-# SCIIO — Ardor Retro Computer + Hermes
+# ULTIMA SENAL / SCIIO
 
-Reproducción de https://ardor.cloud/retro-computer?ref=cssda, recuperada el 19 de octubre de 2026.
-Conserva el terminal WebGL original, los shaders CRT, la fuente incrustada, las escenas ASCII animadas, los controles de teclado, los comandos, los colores, el audio y el diseño adaptable.
+Una estacion desaparecida. Tu nombre en el ruido.
 
-## Ejecutar
+Prototipo jugable de misterio y ciencia ficcion en un terminal CRT: explora Nadir, recupera sus registros, sintoniza una voz y decide que hacer con la ultima reserva de energia. Incluye dos enigmas, conversaciones con ECO y tres finales. Historia en espanol, escenas ASCII 3D, controles con raton/teclado y teclado numerico para pantallas tactiles.
+
+## Jugar en local
 
 Requiere Node.js 22 o posterior. No necesita instalar dependencias.
 
@@ -11,39 +12,41 @@ Requiere Node.js 22 o posterior. No necesita instalar dependencias.
 npm run dev
 ```
 
-Abre http://localhost:3000 o http://localhost:3000/retro-computer?ref=cssda.
-También acepta `--port` y `--host`, y la variable `PORT`.
+Abre http://localhost:3000 y pulsa CONECTAR. La partida se guarda en este navegador. CUADERNO muestra el objetivo y las pistas; PISTA ofrece ayuda sin penalizacion. No hay limite de tiempo.
+
+- Flechas y Enter: elegir controles. Escape: cerrar ventanas o cancelar una decision.
+- 1 a 5: sectores. 6 o J: cuaderno. P: pista. ?: ayuda.
+- Escribe ordenes desde el campo inferior: AYUDA explica las disponibles.
+- Arrastrar o Shift + flechas: girar la escena. Rueda o + / -: zoom.
+- M: sonido ambiente, desactivado al inicio. C: colores.
+- REINICIAR pide confirmacion y conserva los finales descubiertos.
+
+El guardado depende de localStorage: si el navegador lo bloquea, la pantalla avisa y la partida continua solo durante esa sesion. No hay cuentas ni sincronizacion.
+
+## Verificar y compilar
 
 ```sh
 npm test
 npm run build
 ```
 
-`dist/` contiene el sitio estático listo para alojar. Para usar también la ruta `/retro-computer` en un alojamiento estático, configura su fallback hacia `index.html`.
+`dist/` contiene el sitio estatico. Las pruebas cubren las tres rutas completas, los bloqueos y pistas de los enigmas, confirmacion y cancelacion, guardados corruptos, reinicio, controles moviles y regresiones de las escenas 3D.
+
+## Experimentos anteriores
+
+- http://localhost:3000/retro-computer conserva el explorador original.
+- http://localhost:3000/#hermes abre la adaptacion de la pagina de Hermes.
+
+Hermes fue un experimento informativo: no instala ni ejecuta un agente. ECO es un personaje con dialogos escritos, sin API de IA. El sonido es sintetizado; no hay doblaje.
 
 ## Vercel
 
-Importa `Rapidfiend34/SCIIO` desde GitHub o ejecuta `vercel --prod` desde la raíz del proyecto con tu sesión iniciada. `vercel.json` configura el build estático, la salida `dist/` y la ruta `/retro-computer`. La sección Hermes está disponible en `/#hermes`. No requiere variables de entorno ni un servidor Node.js en producción.
+Importa `Rapidfiend34/SCIIO` o ejecuta `vercel --prod` con una cuenta habilitada. `vercel.json` define el build estatico, la salida `dist/` y la ruta `/retro-computer`. No requiere variables de entorno ni un servidor Node.js en produccion.
 
-## Procedencia y cambios
+## Procedencia
 
-Se ha reutilizado el código que entrega públicamente la referencia, en lugar de aproximar el efecto visual. Los archivos originales se separaron en HTML, CSS y JavaScript; se retiraron los scripts de analítica de Datafast y Google. Los enlaces de producto apuntan al sitio original. Los recursos visuales se sirven localmente.
+El motor visual procede de https://ardor.cloud/retro-computer?ref=cssda, recuperado el 19 de octubre de 2026. Conserva los shaders CRT, tipografia incrustada, conversion ASCII y controles accesibles. Se retiraron los scripts de analitica de Datafast y Google. El bundle mantiene el aviso de licencia MIT de Three.js. Los recursos y marcas originales de Ardor pertenecen a sus titulares; esta copia no acredita una licencia para redistribuirlos.
 
 SHA-256 del HTML original: `d14746a5b5a7d2e8c55c51c84faed9dcd3eac74592524f57d9bc163972ae6044`.
 
-El bundle conserva el aviso de licencia MIT de Three.js. Las marcas, textos y demás recursos de Ardor pertenecen a sus titulares; esta copia no acredita una licencia para redistribuirlos.
-
-La representación requiere JavaScript y WebGL. Las ideas guardadas se almacenan en el navegador. Los servicios externos de Ardor no forman parte de esta copia.
-
-## Sección Hermes
-
-Pulsa `6` o `H`, elige `6 HERMES AGENT`, o abre http://localhost:3000/#hermes.
-El comando `HERMES` también abre la sección; `SCIIO` vuelve a la escena anterior.
-
-Dentro de Hermes, `1` a `5` abren resumen, capacidades, instalación, preguntas frecuentes y Nous Portal; `6` vuelve a SCIIO. Los textos largos usan la paginación del terminal. Colores, configuración de pantalla y controles accesibles siguen usando el motor CRT original.
-
-Contenido adaptado de https://hermes-agent.nousresearch.com/ el 19 de octubre de 2026. Los precios son una instantánea fechada; el enlace CURRENT PLANS lleva a las condiciones actuales. La sección incluye enlaces oficiales a documentación, GitHub, comunidad, descargas y despliegue en la nube. COPY INSTALL copia el comando oficial: no ejecuta ni instala software.
-
-El rostro con casco alado es una escena 3D de Three.js que usa el rasterizador ASCII original: gira, flota y mueve las alas, con señales que recorren sus órbitas. Arrastra sobre el rostro o usa `Shift` + flechas para rotarlo, la rueda o `+` / `-` para acercarlo y `R` para restaurar la vista. El símbolo `H` de la cabecera también rota y cambia sus caracteres. La preferencia del sistema de movimiento reducido detiene las animaciones automáticas.
-
-La inspección se hizo con el navegador y el HTML público; REA MCP no está registrado en esta sesión. No se modificó su configuración. Esta integración es un apartado informativo y no conecta un agente ni una cuenta de Nous.
+El contenido del experimento Hermes se adapto de https://hermes-agent.nousresearch.com/ el 19 de octubre de 2026. Los enlaces de ese apartado llevan a los servicios oficiales; sus precios son una instantanea fechada. La historia y reglas de ULTIMA SENAL son nuevas. Se requiere JavaScript y WebGL; se respeta la preferencia de movimiento reducido.

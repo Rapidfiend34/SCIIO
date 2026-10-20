@@ -16,7 +16,7 @@ test('serves both page URLs, local assets and handles invalid requests', async (
       assert.match(html, /\/assets\/terminal.js/);
       assert.doesNotMatch(html, /datafa\.st|googletagmanager/);
     }
-    for (const path of ['/assets/terminal.css', '/assets/terminal.js', '/assets/hermes-content.js', '/icon.svg']) {
+    for (const path of ['/assets/terminal.css', '/assets/terminal.js', '/assets/hermes-content.js', '/assets/signal-game.js', '/icon.svg']) {
       assert.equal((await fetch(base + path)).status, 200);
     }
     assert.equal((await fetch(base + '/missing')).status, 404);

@@ -10,6 +10,7 @@ const files = new Map([
   ['/assets/terminal.css', ['assets/terminal.css', 'text/css; charset=utf-8']],
   ['/assets/terminal.js', ['assets/terminal.js', 'text/javascript; charset=utf-8']],
   ['/assets/hermes-content.js', ['assets/hermes-content.js', 'text/javascript; charset=utf-8']],
+  ['/assets/signal-game.js', ['assets/signal-game.js', 'text/javascript; charset=utf-8']],
   ['/favicon.ico', ['favicon.ico', 'image/x-icon']],
   ['/icon.svg', ['icon.svg', 'image/svg+xml']],
   ['/apple-icon.png', ['apple-icon.png', 'image/png']],
