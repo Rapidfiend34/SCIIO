@@ -155,3 +155,60 @@ test('old saves keep discoveries but require the new fictional access and route'
   assert.equal(migrated.pending, null);
   assert.equal(game.apply(migrated, 'CONFIAR ECO').state.trust, null);
 });
+
+test('files are mounted progressively and a directory does not reveal locked content', () => {
+  let s = play(game.initial(), [...access, 'INICIAR']);
+  assert.equal(game.apply(s, 'LS').file, 'directory');
+  assert.equal(game.apply(s, 'ABRIR guardia.log').file, null);
+  assert.equal(game.evidence(s, 'guardia'), null);
+  assert.equal(game.apply(s, 'ABRIR nota_d17.txt').file, 'baliza');
+  s = play(s, ['LEER BALIZA', 'CLAVE 0317']);
+  assert.equal(game.apply(s, 'CAT lia_luces.img').file, 'protocolo');
+  assert.equal(game.apply(s, 'ABRIR ../../server.mjs').file, null);
+  assert.equal(game.apply(s, 'ABRIR consentimiento.sig').file, null);
+  assert.equal(game.apply(s, 'ABRIR cielo_128.dat').file, null);
+  assert.equal(game.apply(s, 'ABRIR cam_03_0317.img').file, null);
+  assert.equal(game.evidence(s, 'D-17'), null);
+});
+
+test('corrupt log blocks expose original evidence only after explicit recovery and persist', () => {
+  let s = play(game.initial(), [...access, 'INICIAR', 'CLAVE 0317']);
+  assert.equal(game.apply(s, 'RECUPERAR 1').state.recovered.length, 0);
+  s = game.apply(s, 'ABRIR guardia.log').state;
+  assert.doesNotMatch(game.evidence(s, 'guardia').lines.join('\n'), /CIERRE AUTORIZADO POR/);
+  s = play(s, ['RECUPERAR 3', 'RECUPERAR 3']);
+  assert.equal(s.recovered.length, 1);
+  assert.match(game.evidence(s, 'guardia').lines.join('\n'), /CIERRE AUTORIZADO POR: D-17/);
+  s = game.restore(JSON.stringify(play(s, ['RECUPERAR 1', 'RECUPERAR 2'])));
+  assert.equal(s.recovered.length, 3);
+  assert.match(game.evidence(s, 'guardia').lines.join('\n'), /SUJETO D-17/);
+  assert.equal(game.restore(JSON.stringify({ ...s, recovered: [4] })).started, false);
+});
+
+test('all 24 identity rows can be inspected and D-17 explicitly indexes the camera attachment', () => {
+  let s = play(game.initial(), [...access, 'INICIAR', 'CLAVE 0317']);
+  assert.equal(game.identities.length, 24);
+  assert.equal(new Set(game.identities.map(person => person.id)).size, 24);
+  assert.equal(game.apply(s, 'INSPECCIONAR D-17').file, null);
+  s = game.apply(s, 'ABRIR identidades.db').state;
+  for (const person of game.identities) {
+    const result = game.apply(s, 'INSPECCIONAR ' + person.id);
+    assert.equal(result.file, person.id);
+    s = result.state;
+    assert.match(game.evidence(s, person.id).lines.join('\n'), new RegExp(person.id));
+  }
+  assert.equal(game.apply(s, 'ABRIR cam_03_0317.img').file, 'camara');
+  assert.match(game.evidence(s, 'camara').lines.join('\n'), /CERRADA DESDE EL INTERIOR/);
+  assert.equal(game.restore(JSON.stringify(s)).inspected.length, 24);
+});
+
+test('signal metadata is revealed by comparing the recovered captures', () => {
+  let s = play(game.initial(), [...beforeRoute, 'CONFIAR ECO', 'DERIVAR OBSERVATORIO', 'CONFIRMAR']);
+  assert.equal(game.apply(s, 'COMPARAR').state.compared, false);
+  s = play(s, ['GIRAR 1', 'GIRAR 2', 'GIRAR 3', 'GIRAR 3', 'GIRAR 4', 'GIRAR 4', 'GIRAR 4', 'COMPROBAR']);
+  assert.doesNotMatch(game.evidence(s, 'diagnostico').lines.join('\n'), /ITERACION: 2048/);
+  const compared = game.apply(s, 'COMPARAR');
+  assert.equal(compared.file, 'diagnostico');
+  assert.match(game.evidence(compared.state, 'diagnostico').lines.join('\n'), /ITERACION: 2048/);
+  assert.equal(game.restore(JSON.stringify(compared.state)).compared, true);
+});

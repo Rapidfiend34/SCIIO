@@ -16,6 +16,7 @@ Abre http://localhost:3000 y escribe tu alias en la linea `login:`. Pulsa Enter 
 
 - Flechas y Enter: elegir controles. Escape: cerrar ventanas o cancelar una decision.
 - 1 a 7: sectores. 8 o J: cuaderno. P: pista. ?: ayuda.
+- F: directorio. ABRIR nombre / CAT nombre: inspeccionar un archivo. PageUp / PageDown: paginas.
 - Escribe ordenes desde el campo inferior: AYUDA explica las disponibles.
 - Arrastrar o Shift + flechas: girar la escena. Rueda o + / -: zoom.
 - M: sonido ambiente, desactivado al inicio. C: colores.
@@ -24,6 +25,20 @@ Abre http://localhost:3000 y escribe tu alias en la linea `login:`. Pulsa Enter 
 El registro es parte de la ficcion: no pide correo ni contrasena, no crea una cuenta real y solo recuerda un perfil por navegador. Los minijuegos se pueden repetir sin penalizacion y tienen botones para pantallas tactiles. Las rutas de energia requieren confirmacion y se mantienen hasta reiniciar.
 
 El guardado depende de localStorage: si el navegador lo bloquea, la pantalla avisa y la partida continua solo durante esa sesion. No hay sincronizacion entre dispositivos. Los guardados anteriores conservan registros y finales, y pasan por el nuevo acceso.
+
+## Evidencias en la terminal
+
+ARCHIVOS o LS monta un directorio con siete archivos del juego. No accede al disco real.
+
+- `nota_d17.txt`: nota original y hora de cierre.
+- `guardia.log`: tres bloques danados recuperables, con verificacion CRC y dos versiones del registro.
+- `lia_luces.img`: imagen ASCII para deducir la frecuencia.
+- `identidades.db`: 24 filas inspeccionables, fichas biometricas y adjuntos. La ficha D-17 indexa un fotograma de CAM-03.
+- `cam_03_0317.img`: fotograma ASCII con metadatos de puerta y tarjeta.
+- `consentimiento.sig`: documento firmado que se reconstruye al completar el recuerdo.
+- `cielo_128.dat`: capturas obtenidas al resolver el circuito; SUPERPONER recupera metadatos de la senal.
+
+La recuperacion de bloques, fichas inspeccionadas y comparaciones persisten en el guardado. Los archivos nuevos respetan los bloqueos de historia; los guardados anteriores se conservan. Las imagenes son ilustraciones ASCII dentro del CRT.
 
 ## Verificar y compilar
 

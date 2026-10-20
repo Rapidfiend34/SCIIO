@@ -72,6 +72,27 @@ test('game controls fit desktop and mobile, numeric input fits, and UI actions s
   assert.equal(scenes.at(-1), 'hermes');
   assert.ok(panels.some(panel => panel?.title === 'SESION RESTABLECIDA'));
   assert.match(context.signalAccessible(), /ECO/);
+  for (const command of ['CLAVE 0317', 'ABRIR guardia.log', 'RECUPERAR 1', 'ABRIR identidades.db', 'INSPECCIONAR D-17']) context.signalCommand(command);
+  for (const mobile of [false, true]) {
+    context.M.mobile = mobile;
+    const grid = { cols: mobile ? 40 : 84, text() {}, put() {}, rule() {}, box() {} };
+    for (const key of ['directory', 'guardia', 'tripulacion', 'D-17', 'camara', 'protocolo']) {
+      controls.length = 0;
+      runInNewContext(`signalFile = { key: '${key}', page: 0 }`, context);
+      context.renderSignalFiles(grid);
+      assert.ok(controls.some(control => control.id === 'signal-file-close'));
+      for (const control of controls) {
+        assert.ok(control.x >= 0 && control.x + control.w <= grid.cols, control.id);
+        assert.ok(control.y >= 0 && control.y < (mobile ? 61 : 46), control.id);
+      }
+    }
+    runInNewContext("signalFile = { key: 'tripulacion', page: 0 }", context);
+    context.signalFilePage(10);
+    context.M.dialog = 'signal-file';
+    assert.match(context.signalAccessible(), /D-17/);
+    assert.doesNotMatch(context.signalAccessible(), /D-01/);
+    context.M.dialog = null;
+  }
   context.localStorage.setItem = () => { throw new Error('Storage denied'); };
   context.signalCommand('CUADERNO');
   assert.match(context.signalAccessible(), /no permite guardar/);

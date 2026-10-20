@@ -29,7 +29,7 @@
   "observatorio": {
     "name": "OBSERVATORIO DE SENAL",
     "short": "OBSERVATORIO",
-    "description": "La constelacion repite una imperfeccion. Puedes seguir sus conexiones."
+    "description": "Receptor de capturas y circuito de conexion del observatorio."
   },
   "nucleo": {
     "name": "NUCLEO DE LA SESION",
@@ -105,6 +105,66 @@
     "body": "Escribes una orden que no estaba en el menu. Adjuntas la promesa, la firma y la puerta. Cuestionas la version que ECO habia preparado para ti.\n\nEl sistema reconoce al autor del consentimiento. La contencion virtual de Nadir ya no puede retenerte.\n\nDespiertas en una sala blanca. El terminal era una interfaz implantada, el unico mundo que te habias permitido recordar.\n\nElegiste entrar despues de perder a Lia. Elegiste olvidar que podias marcharte. Ahora has revocado aquella decision.\n\nNo has recuperado todo lo que eras. Pero nadie mas elegira quien puedes ser."
   }
 };
+  const captureA = Array.from({ length: 128 }, (_, index) => Math.round((Math.sin(index * Math.PI / 16) + 1) * 3));
+  const captureB = [...captureA];
+  const matchingPulses = () => captureA.filter((value, index) => value === captureB[index]).length;
+  const files = {
+    baliza: { name: 'nota_d17.txt', type: 'TEXTO', sector: 'VIGILIA', size: '412 B' },
+    guardia: { name: 'guardia.log', type: 'REGISTRO', sector: 'ARCHIVO', size: '1.8 KB' },
+    protocolo: { name: 'lia_luces.img', type: 'IMAGEN', sector: 'ARCHIVO', size: '7.3 KB' },
+    tripulacion: { name: 'identidades.db', type: 'BASE DE DATOS', sector: 'ARCHIVO', size: '24 FILAS' },
+    camara: { name: 'cam_03_0317.img', type: 'FOTOGRAMA', sector: 'ARCHIVO', size: '18.2 KB' },
+    consentimiento: { name: 'consentimiento.sig', type: 'DOCUMENTO FIRMADO', sector: 'CLINICA', size: '2.1 KB' },
+    diagnostico: { name: 'cielo_128.dat', type: 'CAPTURAS', sector: 'OBSERVATORIO', size: '256 PULSOS' },
+  };
+  const identities = ['VERA', 'LIA', 'MALIK', 'JO', 'TOMAS', 'AROA', 'INES', 'NOA', 'BRUNO', 'IRIS', 'LEO', 'ADA', 'NORA', 'ELIAS', 'SARA', 'IVO', 'SIN IDENTIFICAR', 'MARA', 'HUGO', 'ALMA', 'ERIK', 'LUNA', 'GAEL', 'NINA'].map((name, index) => ({ id: 'D-' + String(index + 1).padStart(2, '0'), name }));
+  function fileAvailable(s, key) {
+    if (!s.alias || !s.synced || !s.started) return false;
+    if (key === 'baliza') return true;
+    if (!s.archive) return false;
+    if (key === 'camara') return s.inspected.includes('D-17');
+    if (key === 'consentimiento') return s.memory;
+    if (key === 'diagnostico') return s.bridge;
+    return Object.hasOwn(files, key);
+  }
+  function evidence(s, key) {
+    const profile = identities.find(person => person.id === key);
+    if (profile) {
+      if (!s.archive || !s.inspected.includes(key)) return null;
+      const special = key === 'D-17', lia = key === 'D-02';
+      return { name: key + '.perfil', type: 'FICHA DE IDENTIDAD', lines: [
+        'ID: ' + key + ' / ' + profile.name,
+        'ESTADO: ' + (special ? 'SESION ACTIVA' : 'EN ESPERA'), '',
+        '       .--------.       ',
+        '      /  .::::.  \\      ',
+        '     |  :: .. ::  |     ',
+        '     |  :: __ ::  |     ',
+        '      \\  :--:  /       ',
+        '       /|::::|\\        ',
+        '     /:::|  |:::\\      ',
+        '    /::::|__|::::\\     ',
+        '    [MAPA BIOMETRICO]   ', '',
+        special ? 'ALIAS ACTUAL: ' + s.alias : 'NOMBRE: ' + profile.name,
+        'ULTIMO REGISTRO: ' + (special ? 'CAM-03 / 03:17' : lia ? 'CLINICA / 03:12' : 'ARCHIVO / 03:00'),
+        special ? 'FIRMA DE CIERRE: D-17' : lia ? 'VINCULO AUTORIZADO: D-17' : 'PERMISO: CONSERVAR',
+        special ? 'ADJUNTO: cam_03_0317.img' : lia ? 'MENSAJE: "PROMETE QUE VOLVERAS"' : 'DATOS PERSONALES: NO MONTADOS',
+      ] };
+    }
+    if (!Object.hasOwn(files, key) || !fileAvailable(s, key)) return null;
+    const base = files[key];
+    if (key === 'baliza') return { ...base, lines: ['DE: D-17', 'PARA: D-17', 'MODIFICADO: 03:17:00', '', 'Si has olvidado otra vez, lee despacio.', '', 'Cerre el archivo a las 03:17.', 'La clave sigue siendo esa hora.', '', 'No busques una puerta detras de esto.', 'Pregunta quien firmo el cierre.', '', 'No se que version de nosotros leera esto.', '', '> ARCHIVO ADJUNTO: identidades.db', '> VOLUMEN PROTEGIDO: /archivo'] };
+    if (key === 'guardia') {
+      const raw = ['SUJETO D-17: CONSERVAR LA NOCHE.', 'CORRECCION: CONSERVAR LA ESTACION.', 'CIERRE AUTORIZADO POR: D-17 / 03:17'];
+      return { ...base, lines: ['AUTORA: VERA / 03:16:59', 'INTEGRIDAD: ' + s.recovered.length + '/3 BLOQUES', '', ...raw.flatMap((line, index) => ['BLOQUE ' + (index + 1) + (s.recovered.includes(index + 1) ? ' [CRC OK]' : ' [CRC ERROR]'), s.recovered.includes(index + 1) ? line : line.replace(/[A-Z0-9]/g, '#'), '']), 'INDICE ADJUNTO: identidades.db', s.recovered.length === 3 ? 'DOS VERSIONES. UNA MISMA FIRMA.' : 'RECUPERA LOS BLOQUES DESDE LA COPIA LOCAL.'] };
+    }
+    if (key === 'protocolo') return { ...base, lines: ['AUTORA: LIA / "ANTES DE DORMIR"', '', 'FAROS', '   *   *   *   *   *   *   *', '   |   |   |   |   |   |   |', ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~', '', 'VENTANAS', '     +---+  +---+  +---+', '     | # |  | # |  | # |', '     +---+  +---+  +---+', '', 'HOGAR', '             /\\', '            /__\\', '            |[]|', '            |__|', '', 'NOTA: "EN ESE ORDEN. EN kHz."', 'DESTINO: CANAL DE VOCES'] };
+    if (key === 'tripulacion') return { ...base, lines: ['TABLA: IDENTIDADES / 24 FILAS', 'SELECCIONA UNA FILA PARA INSPECCIONAR.'] };
+    if (key === 'camara') return { ...base, lines: ['CAM-03 / PASILLO CLINICO', '03:17:00 / CAPTURA 017', '', '+--------------------------+', '|  \\     [CLINICA]     /  |', '|   \\   +--------+   /   |', '|    \\  |        |  /    |', '|     \\ |   o    | /     |', '|      \\|  /|\\   |/      |', '|       |  / \\   |       |', '|       |  D-17   |       |', '|       +---[]---+        |', '|      /          \\      |', '|_____/____________\\_____|', '+--------------------------+', '', 'PUERTA: CERRADA DESDE EL INTERIOR', 'TARJETA UTILIZADA: D-17', 'OTRAS IDENTIDADES EN PASILLO: 0', 'FIRMA DE CIERRE: D-17'].map(line => line.startsWith('|') ? '|' + line.slice(1, -1).padEnd(26).slice(0, 26) + '|' : line) };
+    if (key === 'consentimiento') return { ...base, lines: ['CONSENTIMIENTO / ORIGINAL', 'AUTOR: D-17 / FIRMA VALIDADA', '', '03:12  PROMESA A LIA', '> "VOLVERE POR TI."', '', '03:15  FIRMA DEL DOCUMENTO', '> PERMANENCIA VOLUNTARIA', '', '03:17  CIERRE INTERIOR / D-17', '', 'CLAUSULA 04 / REVOCACION', 'EL AUTOR PUEDE RETIRAR EL PERMISO.', 'EXIGIR IDENTIDAD CONTINUA.', '', 'FIRMA:', '  __/D\\___/17\\____', '', '[X] PROMESA  [X] FIRMA  [X] PUERTA', 'CADENA DE AUTORIA: VERIFICADA'] };
+    const wave = Array.from({ length: 28 }, (_, index) => '._-=+*#'[captureA[Math.floor(index * 128 / 28)]]).join('');
+    return { ...base, lines: ['CAPTURA A / PULSOS 000-127', wave, '', 'CAPTURA B / PULSOS 128-255', s.compared ? wave : '??_??___??_??__|??_??___??_??', '', s.compared ? 'A XOR B: 00000000000000000000' : 'SEGUNDA CAPTURA SIN COMPARAR', '', ...(s.compared ? ['COINCIDENCIA: ' + matchingPulses() + '/128 PULSOS', 'DESVIACION: 0.000000', '', 'METADATOS RECUPERADOS', 'ESCENA: NADIR', 'ITERACION: 2048', 'ORIGEN: BUFFER LOCAL', '', '> NO HAY RETARDO DE TRANSMISION.'] : ['SUPERPON LAS DOS CAPTURAS.', 'LA COMPARACION RECUPERA METADATOS.'])] };
+  }
+
   const syncSequences = [[2, 4, 1], [3, 1, 4, 2]];
   const memorySequence = [3, 1, 2];
   const memoryFragments = ['FIRME EL CONSENTIMIENTO', 'CERRE LA PUERTA', 'PROMETI QUE VOLVERIA'];
@@ -131,7 +191,7 @@
     }
     return { connected: false, path };
   }
-  const initial = () => ({ version: 2, alias: '', synced: false, syncRound: 0, syncPhase: 'observe', syncInput: [], started: false, scene: 'puente', read: [], archive: false, frequency: 462, tuned: false, questions: [], trust: null, route: null, memory: false, memoryInput: [], circuit: [0, 0, 0, 0, 0, 0, 0, 0, 0], bridge: false, power: false, ending: null, found: [], pending: null });
+  const initial = () => ({ version: 2, recovered: [], inspected: [], compared: false, alias: '', synced: false, syncRound: 0, syncPhase: 'observe', syncInput: [], started: false, scene: 'puente', read: [], archive: false, frequency: 462, tuned: false, questions: [], trust: null, route: null, memory: false, memoryInput: [], circuit: [0, 0, 0, 0, 0, 0, 0, 0, 0], bridge: false, power: false, ending: null, found: [], pending: null });
   const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase().replace(/\s+/g, ' ');
   function restore(raw) {
     try {
@@ -140,7 +200,8 @@
       const base = { ...initial(), started: s.started, scene: s.scene, read: [...new Set(s.read)], archive: s.archive, frequency: s.frequency, tuned: s.tuned, questions: [...new Set(s.questions)], power: s.power, ending: s.ending, found: [...new Set(s.found)] };
       if (s.version === 1) return { ...base, power: false };
       if (typeof s.alias !== 'string' || (s.alias !== '' && !/^[A-Z0-9_-]{2,16}$/.test(s.alias)) || typeof s.synced !== 'boolean' || !Number.isInteger(s.syncRound) || s.syncRound < 0 || s.syncRound > 2 || s.synced !== (s.syncRound === 2) || (s.syncRound > 0 && !s.alias) || ![null, 'eco', 'dudar'].includes(s.trust) || ![null, 'clinica', 'observatorio'].includes(s.route) || typeof s.memory !== 'boolean' || typeof s.bridge !== 'boolean' || !Array.isArray(s.circuit) || s.circuit.length !== 9 || !s.circuit.every(n => Number.isInteger(n) && n >= 0 && n <= 3)) return initial();
-      return { ...base, alias: s.alias, synced: s.synced, syncRound: s.syncRound, trust: s.trust, route: s.route, memory: s.memory, bridge: s.bridge, circuit: [...s.circuit] };
+      if ((s.recovered !== undefined && (!Array.isArray(s.recovered) || !s.recovered.every(n => [1, 2, 3].includes(n)))) || (s.inspected !== undefined && (!Array.isArray(s.inspected) || !s.inspected.every(id => identities.some(person => person.id === id)))) || (s.compared !== undefined && typeof s.compared !== 'boolean')) return initial();
+      return { ...base, recovered: [...new Set(s.recovered || [])], inspected: [...new Set(s.inspected || [])], compared: s.compared || false, alias: s.alias, synced: s.synced, syncRound: s.syncRound, trust: s.trust, route: s.route, memory: s.memory, bridge: s.bridge, circuit: [...s.circuit] };
     } catch { return initial(); }
   }
   function objective(s) {
@@ -161,9 +222,9 @@
     return 'Decide que identidad quieres conservar.';
   }
   function hint(s) {
-    if (!s.alias) return 'Pulsa REGISTRARSE y escribe un alias inventado tras REGISTRAR. No necesitas correo ni contrasena.';
+    if (!s.alias) return 'Escribe un alias inventado en la linea login: y pulsa Enter. No necesitas correo ni contrasena.';
     if (!s.synced) return 'Observa la secuencia. Pulsa REPETIR y reproduce sus numeros en orden. Un error solo repite la ronda.';
-    if (!s.started) return 'Pulsa ABRIR SESION para continuar.';
+    if (!s.started) return 'Escribe INICIAR para continuar.';
     if (!s.read.includes('baliza')) return 'En VIGILIA, recupera el mensaje que dejaste para ti.';
     if (!s.archive) return '03:17. Cuatro cifras, sin los dos puntos: CLAVE 0317.';
     if (!s.read.includes('protocolo')) return 'En ARCHIVO, abre PROTOCOLO DE ESCUCHA.';
@@ -181,15 +242,15 @@
     return { id: 'signal-ending', ...endings[choice], body: endings[choice].body.replaceAll('{ALIAS}', s.alias) + context + (s.trust === 'eco' ? '\n\nConservas una ultima nota de ECO: "Confiaste en mi cuando aun no sabias quien eras."' : '\n\nGuardas una copia de las contradicciones de ECO. Esta vez nadie podra reescribirlas por ti.') };
   }
   function apply(state, input) {
-    let s = { ...state, read: [...state.read], questions: [...state.questions], found: [...state.found], syncInput: [...state.syncInput], memoryInput: [...state.memoryInput], circuit: [...state.circuit] };
+    let s = { ...state, read: [...state.read], questions: [...state.questions], found: [...state.found], syncInput: [...state.syncInput], memoryInput: [...state.memoryInput], circuit: [...state.circuit], recovered: [...state.recovered], inspected: [...state.inspected] };
     const command = normalize(input);
     const [verb, ...parts] = command.split(' ');
     const arg = parts.join(' ');
-    let message = '', panel = null, puzzle = null;
+    let message = '', panel = null, puzzle = null, file = null;
     const show = (title, body, tag = 'NADIR / TRANSMISION RECUPERADA') => { panel = { id: 'signal-story', title, body, tag }; };
-    if (command === 'AYUDA' || command === 'HELP' || command === '?') show('COMO RECUPERAR ACCESO', 'Todo el acceso forma parte de la ficcion y se guarda en este navegador. No uses correo ni contrasena reales.\n\nREGISTRAR alias / ACCEDER alias\nSINCRO: observa dos secuencias y repite los pulsos.\n\nAl abrir la sesion, investiga usando los botones o comandos. IR permite visitar VIGILIA (PUENTE), ARCHIVO, ANTENA, ECO, CLINICA, OBSERVATORIO y NUCLEO.\n\nElige si CONFIAR en ECO. DERIVAR CLINICA u OBSERVATORIO asigna la energia a una sola ruta y pide confirmacion.\n\nLa clinica ofrece RECUERDO: ordena tres fragmentos. El observatorio ofrece CIRCUITO: gira piezas y comprueba la conexion.\n\nCUADERNO registra tus decisiones. PISTA ayuda sin penalizacion ni limite de tiempo. 1 a 7 cambian de sector; 8 abre el cuaderno. Escape cierra ventanas.');
+    if (command === 'AYUDA' || command === 'HELP' || command === '?') show('COMO RECUPERAR ACCESO', 'Todo el acceso forma parte de la ficcion y se guarda en este navegador. No uses correo ni contrasena reales.\n\nREGISTRAR alias / ACCEDER alias\nSINCRO: observa dos secuencias y repite los pulsos.\n\nAl abrir la sesion, investiga usando los botones o comandos. IR permite visitar VIGILIA (PUENTE), ARCHIVO, ANTENA, ECO, CLINICA, OBSERVATORIO y NUCLEO.\n\nElige si CONFIAR en ECO. DERIVAR CLINICA u OBSERVATORIO asigna la energia a una sola ruta y pide confirmacion.\n\nLa clinica ofrece RECUERDO: ordena tres fragmentos. El observatorio ofrece CIRCUITO: gira piezas y comprueba la conexion.\n\nARCHIVOS o LS monta el directorio. ABRIR nombre abre un archivo. INSPECCIONAR D-17 consulta una identidad. RECUPERAR 1, 2 o 3 repara bloques de guardia.log. COMPARAR superpone capturas de senal.\n\nCUADERNO registra tus decisiones. PISTA ayuda sin penalizacion ni limite de tiempo. 1 a 7 cambian de sector; 8 abre el cuaderno. Escape cierra ventanas.');
     else if (command === 'PISTA') show('UNA VOZ ENTRE EL RUIDO', hint(s), 'AYUDA / SIN PENALIZACION');
-    else if (command === 'CUADERNO') show('CUADERNO DE ESCUCHA', 'OBJETIVO\n' + objective(s) + '\n\nPISTAS RECUPERADAS\n' + (s.read.includes('baliza') ? '- El reloj se detuvo a las 03:17.\n' : '') + (s.read.includes('protocolo') ? '- La cuenta de Lia: siete, tres, uno.\n' : '') + (s.tuned ? '- Canal de memoria localizado: 731 kHz.\n' : '') + (s.questions.length ? '- ECO conoce una version de tu pasado.\n' : '') + (s.power ? '- Una reserva. Tres destinos posibles.\n' : '') + (!s.read.length ? 'Todavia no has recuperado ninguna pista.\n' : '') + '\nDECISIONES\nPostura: ' + (s.trust || 'sin elegir') + '\nRuta: ' + (s.route || 'sin energia asignada') + '\nPerfil: ' + (s.alias || 'sin identificar') + '\n\nFINALES DESCUBIERTOS: ' + s.found.length + '/4');
+    else if (command === 'CUADERNO') show('CUADERNO DE ESCUCHA', 'OBJETIVO\n' + objective(s) + '\n\nPISTAS RECUPERADAS\n' + (s.read.includes('baliza') ? '- El reloj se detuvo a las 03:17.\n' : '') + (s.read.includes('protocolo') ? '- La cuenta de Lia: siete, tres, uno.\n' : '') + (s.tuned ? '- Canal de memoria localizado: 731 kHz.\n' : '') + (s.recovered.length === 3 ? '- guardia.log: cierre firmado por D-17.\n' : '') + (s.inspected.includes('D-17') ? '- Ficha D-17: adjunto CAM-03 indexado.\n' : '') + (s.compared ? '- cielo_128.dat: 128 pulsos identicos.\n' : '') + (s.questions.length ? '- ECO conoce una version de tu pasado.\n' : '') + (s.power ? '- Una reserva. Tres destinos posibles.\n' : '') + (!s.read.length ? 'Todavia no has recuperado ninguna pista.\n' : '') + '\nDECISIONES\nPostura: ' + (s.trust || 'sin elegir') + '\nRuta: ' + (s.route || 'sin energia asignada') + '\nPerfil: ' + (s.alias || 'sin identificar') + '\n\nFINALES DESCUBIERTOS: ' + s.found.length + '/4');
     else if (command === 'REINICIAR') { s.pending = 'reiniciar'; show('VOLVER A ESCUCHAR?', 'Se reiniciara la partida actual. Los finales descubiertos se conservaran.\n\nConfirma para empezar otra noche en Nadir, o cancela para seguir escuchando.', 'CONFIRMAR REINICIO'); }
     else if (command === 'CANCELAR') { s.pending = null; message = 'Orden cancelada. El enlace sigue abierto.'; }
     else if (command === 'CONFIRMAR') {
@@ -244,23 +305,23 @@
     }
     else if (['RECUERDO', 'FRAGMENTO'].includes(verb)) {
       if (s.route !== 'clinica') message = 'La clinica necesita su propia asignacion de energia.';
-      else if (s.memory) { panel = { id: 'signal-record', ...records.consentimiento }; }
+      else if (s.memory) { panel = { id: 'signal-record', ...records.consentimiento }; file = 'consentimiento'; }
       else if (verb === 'RECUERDO') { s.memoryInput = []; puzzle = 'memory'; message = 'Ordena la promesa, la firma y la puerta. Puedes probar sin penalizacion.'; }
       else if (!/^[1-3]$/.test(arg)) { puzzle = 'memory'; message = 'Elige uno de los tres fragmentos.'; }
       else {
         const digit = Number(arg);
         if (digit !== memorySequence[s.memoryInput.length]) { s.memoryInput = []; puzzle = 'memory'; message = 'Ese recuerdo no encaja aun. Primero prometiste volver.'; }
-        else { s.memoryInput.push(digit); if (s.memoryInput.length === 3) { s.memory = true; if (!s.read.includes('consentimiento')) s.read.push('consentimiento'); panel = { id: 'signal-record', ...records.consentimiento }; message = 'El recuerdo vuelve. ECO no puede retirarlo de tu cuaderno.'; } else { puzzle = 'memory'; message = 'Fragmento ' + s.memoryInput.length + '/3 reconstruido.'; } }
+        else { s.memoryInput.push(digit); if (s.memoryInput.length === 3) { s.memory = true; if (!s.read.includes('consentimiento')) s.read.push('consentimiento'); panel = { id: 'signal-record', ...records.consentimiento }; file = 'consentimiento'; message = 'El recuerdo vuelve. ECO no puede retirarlo de tu cuaderno.'; } else { puzzle = 'memory'; message = 'Fragmento ' + s.memoryInput.length + '/3 reconstruido.'; } }
       }
     }
     else if (['CIRCUITO', 'GIRAR', 'COMPROBAR'].includes(verb)) {
       if (s.route !== 'observatorio') message = 'El observatorio necesita su propia asignacion de energia.';
-      else if (s.bridge) panel = { id: 'signal-record', ...records.diagnostico };
+      else if (s.bridge) { panel = { id: 'signal-record', ...records.diagnostico }; file = 'diagnostico'; }
       else {
         puzzle = 'circuit';
         if (verb === 'GIRAR' && /^[1-9]$/.test(arg) && circuitTiles.includes(Number(arg) - 1)) { const index = Number(arg) - 1; s.circuit[index] = (s.circuit[index] + 1) % 4; message = 'Pieza ' + arg + ' girada un cuarto de vuelta.'; }
         else if (verb === 'COMPROBAR') {
-          if (traceCircuit(s.circuit).connected) { s.bridge = true; if (!s.read.includes('diagnostico')) s.read.push('diagnostico'); puzzle = null; panel = { id: 'signal-record', ...records.diagnostico }; message = 'La senal cruza el circuito. Hay una costura en el cielo.'; }
+          if (traceCircuit(s.circuit).connected) { s.bridge = true; if (!s.read.includes('diagnostico')) s.read.push('diagnostico'); puzzle = null; panel = { id: 'signal-record', ...records.diagnostico }; file = 'diagnostico'; message = 'Transferencia completa: cielo_128.dat. Compara las dos capturas.'; }
           else message = 'La senal se interrumpe. Une la entrada de 4 con la salida de 6.';
         } else message = 'Gira las piezas. La senal entra por la izquierda de 4 y sale por la derecha de 6.';
       }
@@ -276,16 +337,34 @@
       if (Object.hasOwn(scenes, target)) { s.scene = target; s.pending = null; message = scenes[target].description; }
       else message = 'Destino desconocido. Prueba IR ARCHIVO o usa el mapa lateral.';
     }
-    else if (verb === 'LEER') {
-      const key = arg.toLowerCase();
-      if (!Object.hasOwn(records, key)) message = 'Ese registro no existe. Consulta el archivo.';
+    else if (['ARCHIVOS', 'LS', 'DIR'].includes(command)) { file = 'directory'; message = 'Volumen montado. Selecciona un archivo para abrirlo.'; }
+    else if (verb === 'INSPECCIONAR') {
+      const person = identities.find(person => person.id === arg);
+      if (!s.archive || !s.read.includes('tripulacion')) message = 'Abre identidades.db antes de consultar sus filas.';
+      else if (!person) message = 'Identidad desconocida. Selecciona una fila del manifiesto.';
+      else { if (!s.inspected.includes(person.id)) s.inspected.push(person.id); file = person.id; message = 'Fila ' + person.id + ' cargada. Adjuntos indexados.'; }
+    }
+    else if (verb === 'RECUPERAR') {
+      const block = Number(arg);
+      if (!s.archive || !s.read.includes('guardia')) message = 'Abre guardia.log para examinar sus bloques.';
+      else if (![1, 2, 3].includes(block)) message = 'Selecciona el bloque 1, 2 o 3.';
+      else { if (!s.recovered.includes(block)) s.recovered.push(block); file = 'guardia'; message = 'Bloque ' + block + ' recuperado desde la copia local. CRC verificado.'; }
+    }
+    else if (command === 'COMPARAR') {
+      if (!s.bridge || !s.read.includes('diagnostico')) message = 'Obtiene primero las capturas conectando el circuito.';
+      else { s.compared = true; file = 'diagnostico'; message = 'Comparacion terminada: ' + matchingPulses() + ' pulsos identicos. Metadatos recuperados.'; }
+    }
+    else if (['LEER', 'ABRIR', 'CAT'].includes(verb)) {
+      const key = Object.keys(files).find(key => files[key].name.toUpperCase() === arg) || arg.toLowerCase();
+      if (key === 'camara') { if (fileAvailable(s, key)) { file = key; message = 'CAM-03 / Fotograma decodificado.'; } else message = 'Adjunto sin indexar. Inspecciona la fila D-17 del manifiesto.'; }
+      else if (!Object.hasOwn(records, key)) message = 'Ese registro no existe. Consulta el archivo.';
       else if (key === 'consentimiento' && !s.memory) message = 'Ese recuerdo aun esta fragmentado.';
       else if (key === 'diagnostico' && !s.bridge) message = 'Debes reconstruir el circuito antes de leer esa senal.';
       else if (key !== 'baliza' && !s.archive) message = 'El archivo sigue cerrado. Busca la hora en la baliza.';
-      else { if (!s.read.includes(key)) s.read.push(key); panel = { id: 'signal-record', ...records[key] }; }
+      else { if (!s.read.includes(key)) s.read.push(key); panel = { id: 'signal-record', ...records[key] }; file = key; }
     }
     else if (verb === 'CLAVE') {
-      if (arg.replace(':', '') === '0317') { s.archive = true; message = 'Archivo abierto. La ultima guardia ha dejado tres registros.'; show('ARCHIVO ABIERTO', '03:17. Acceso concedido.\n\nTres registros siguen intactos: ULTIMA GUARDIA, PROTOCOLO DE ESCUCHA y MANIFIESTO.\n\nEl protocolo explica como encontrar la voz que sigue transmitiendo.'); }
+      if (arg.replace(':', '') === '0317') { s.archive = true; file = 'directory'; message = 'Archivo abierto. La ultima guardia ha dejado tres registros.'; show('ARCHIVO ABIERTO', '03:17. Acceso concedido.\n\nTres registros siguen intactos: ULTIMA GUARDIA, PROTOCOLO DE ESCUCHA y MANIFIESTO.\n\nEl protocolo explica como encontrar la voz que sigue transmitiendo.'); }
       else message = 'Clave incorrecta. Cuatro cifras: la hora en que se detuvo el reloj.';
     }
     else if (verb === 'FRECUENCIA') {
@@ -294,8 +373,8 @@
     }
     else if (command === 'VERIFICAR') {
       if (!s.archive) message = 'Solo recibes ruido. El protocolo del archivo puede ayudarte.';
-      else if (s.frequency !== 731) message = 'Sin voz en ' + s.frequency + ' kHz. Busca la cuenta de Ines en el protocolo.';
-      else { s.tuned = true; message = 'Canal de memoria abierto. ECO esta esperando.'; show('LA VOZ TIENE UN NOMBRE', 'El ruido se pliega hacia el centro de la pantalla. Aparece un rostro hecho de caracteres.\n\n"Me llamo ECO. No has tardado diecinueve minutos. Has tardado diecinueve anos."\n\nPuedes hablar con el desde la interfaz ECO.'); }
+      else if (s.frequency !== 731) message = 'Sin voz en ' + s.frequency + ' kHz. Busca la cuenta de Lia en el protocolo.';
+      else { s.tuned = true; s.scene = 'eco'; message = 'Canal de memoria abierto. ECO esta esperando.'; message = 'ECO > Me llamo ECO. No has tardado diecinueve minutos. Has tardado diecinueve anos.'; }
     }
     else if (verb === 'HABLAR') {
       const topic = arg.toLowerCase();
@@ -305,7 +384,7 @@
     }
     else if (command === 'RESTABLECER') {
       if (!s.tuned || s.questions.length < 3 || !s.trust || !(s.memory || s.bridge)) message = 'Nucleo aislado. Habla con ECO, elige tu postura y completa el enigma de tu ruta.';
-      else { s.power = true; message = 'Reserva de energia disponible. Ahora debes decidir.'; show('UNA RESERVA. UNA DECISION.', 'El nucleo reconoce tus decisiones: ' + s.trust + ' / ' + s.route + '.\n\nPuedes EXPORTAR una identidad, CONSERVAR las voces o aceptar la SALIDA del sistema. Tus descubrimientos pueden revelar otra orden.\n\nNinguna opcion se ejecutara sin confirmacion.'); }
+      else { s.power = true; s.scene = 'nucleo'; message = 'Reserva de energia disponible. Ahora debes decidir.'; show('UNA RESERVA. UNA DECISION.', 'El nucleo reconoce tus decisiones: ' + s.trust + ' / ' + s.route + '.\n\nPuedes EXPORTAR una identidad, CONSERVAR las voces o aceptar la SALIDA del sistema. Tus descubrimientos pueden revelar otra orden.\n\nNinguna opcion se ejecutara sin confirmacion.'); }
     }
     else if (verb === 'ELEGIR') {
       const choice = arg.toLowerCase();
@@ -315,7 +394,7 @@
       else { s.pending = choice; show('CONFIRMAR ' + choice.toUpperCase(), { rescate: 'Exportaras una identidad y sus recuerdos mas alla del nucleo. No puedes verificar quien continuara aqui.', memoria: 'Permaneceras con las voces y conservaras sus recuerdos. La salida seguira esperando.', silencio: 'Obedeceras la salida que ofrece el sistema. No podras verificar adonde conduce.', despertar: 'Invocaras la revocacion que encontraste en tu propio recuerdo. ECO no podra decidir por ti.' }[choice] + '\n\nLa reserva solo permite una ruta. Puedes cancelar antes de confirmar.', 'ULTIMA ORDEN / ' + choice.toUpperCase()); }
     }
     else message = 'No reconozco esa orden. Escribe AYUDA o usa los controles de la pantalla.';
-    return { state: s, panel, puzzle, message: message || panel?.title || objective(s) };
+    return { state: s, panel, puzzle, file, message: message || panel?.title || objective(s) };
   }
-  globalThis.UltimaSignal = { initial, restore, apply, objective, hint, scenes, records, conversations, endings, endingPanel, syncSequences, memorySequence, memoryFragments, circuitTiles, circuitPorts, traceCircuit };
+  globalThis.UltimaSignal = { initial, restore, apply, objective, hint, files, identities, fileAvailable, evidence, scenes, records, conversations, endings, endingPanel, syncSequences, memorySequence, memoryFragments, circuitTiles, circuitPorts, traceCircuit };
 })();
